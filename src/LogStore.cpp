@@ -8,14 +8,16 @@ LogStore::~LogStore() {
   end();
 }
 
-bool LogStore::begin(uint8_t entrySize, uint8_t writeCacheDepth, uint8_t readCacheDepth) {
+bool LogStore::begin(uint8_t dataSize, uint8_t writeCacheDepth, uint8_t readCacheDepth) {
   _writeBufferDepth = writeCacheDepth;
   _readBufferDepth = readCacheDepth;
-  _entrySize = entrySize;
+  _dataSize = dataSize;
+  _entrySize = (dataSize + CHECKSUM_FIELD_LENGTH);
   _entryCount = 0;
+  _readOffsetAdjustment = 0;
 
   _writeBuffer = malloc(_entrySize * _writeBufferDepth);
-  _readBuffer = malloc(_entrySize * _readBufferDepth);
+  _readBuffer = malloc(_dataSize * _readBufferDepth);
   bool needReset = false;
 
   if ((_writeBuffer == nullptr) || (_readBuffer == nullptr)) {
@@ -35,14 +37,16 @@ bool LogStore::begin(uint8_t entrySize, uint8_t writeCacheDepth, uint8_t readCac
       return false;
     }
 
+    uint32_t readMagicNum;
+    uint32_t readEntrySize;
+    uint32_t readEntryCount;
     uint32_t fileSize = file.size();
-    uint32_t magic;
-    uint16_t entrySize;
     file.seek(0, SeekSet);
-    file.readBytes((char *)&magic, sizeof(magic));
-    file.readBytes((char *)&entrySize, sizeof(entrySize));
+    file.readBytes((char *)&readMagicNum, sizeof(readMagicNum));
+    file.readBytes((char *)&readEntrySize, sizeof(readEntrySize));
+    file.readBytes((char *)&readEntryCount, sizeof(readEntryCount));
 
-    needReset = (magic != _magicNumber) || (entrySize != _entrySize)  //
+    needReset = (readMagicNum != _magicNumber) || (readEntrySize != _entrySize)  //
                 || (fileSize < HEADER_LENGTH);
 
     file.close();
@@ -50,7 +54,15 @@ bool LogStore::begin(uint8_t entrySize, uint8_t writeCacheDepth, uint8_t readCac
     if (needReset) {
       Serial.println("[LS.warn] Magic number or/and entry size mismatch. Clearing log.");
     } else {
-      _entryCount = ((fileSize - HEADER_LENGTH) / _entrySize);
+      uint32_t storedEntryCount = (fileSize - HEADER_LENGTH) / _entrySize;
+      if (storedEntryCount != readEntryCount) {
+        Serial.println(
+            "[LS.warn] Stored entry count does not match header entry count."
+            " The system will try to recover them during reading, but the last"
+            " few entries will be lost.");
+      }
+
+      _entryCount = storedEntryCount;
     }
   } else {
     Serial.println("[LS.info] Log files do not exist. Creating new log store.");
@@ -73,6 +85,7 @@ void LogStore::end() {
   if (_readBuffer) free(_readBuffer);
   _entryCount = 0;
   _entrySize = 0;
+  _readOffsetAdjustment = 0;
   _writeBuffer = nullptr;
   _readBuffer = nullptr;
 
@@ -89,6 +102,7 @@ bool LogStore::reset() {
   // Reset the entry count to zero
   _entryCount = 0;
   _entriesBuffered = 0;
+  _readOffsetAdjustment = 0;
 
   File file = LittleFS.open(DS_FILENAME, FILE_WRITE);
   if (!file) {
@@ -98,8 +112,9 @@ bool LogStore::reset() {
   file.seek(0, SeekSet);
   file.write((const uint8_t *)&_magicNumber, sizeof(_magicNumber));
   file.write((const uint8_t *)&_entrySize, sizeof(_entrySize));
+  file.write((const uint8_t *)&_entryCount, sizeof(_entryCount));
 
-  uint16_t paddingSize = HEADER_LENGTH - (sizeof(_magicNumber) + sizeof(_entrySize));
+  uint16_t paddingSize = HEADER_LENGTH - (sizeof(_magicNumber) + sizeof(_entrySize) + sizeof(_entryCount));
   for (uint16_t i = 0; i < paddingSize; ++i) {
     file.write((const uint8_t)0x00);
   }
@@ -109,7 +124,19 @@ bool LogStore::reset() {
 }
 
 bool LogStore::append(void *data) {
-  memcpy((uint8_t *)_writeBuffer + indexToOffset(_entriesBuffered), data, _entrySize);
+  uint8_t *entry = (uint8_t *)_writeBuffer + indexToOffset(_entriesBuffered);
+  uint32_t dataSize = _entrySize - CHECKSUM_FIELD_LENGTH;
+
+  // Copy the data into the write buffer and calculate the checksum.
+  memcpy(entry, data, dataSize);  // Copy the actual data
+
+  uint8_t checksum = 0;
+  for (uint32_t i = 0; i < dataSize; ++i) {
+    checksum ^= entry[i];
+  }
+  entry[dataSize] = CHECKSUM_DELIMITER;  // Add the checksum delimiter
+  entry[dataSize + 1] = checksum;        // Add the calculated checksum
+
   _entriesBuffered += 1;
 
   // If the write buffer is full, flush it to the file
@@ -124,19 +151,40 @@ bool LogStore::flush() {
   // If there are no logs buffered, there's nothing to flush
   if (_entriesBuffered == 0) return true;
 
-  File file = LittleFS.open(DS_FILENAME, FILE_APPEND);
+  File file = LittleFS.open(DS_FILENAME, "r+");
   if (!file) {
     Serial.println("[LS.err] Failed to open log file for writing.");
     return false;
   }
 
   // Move to the end of the file and write the buffered logs
+  uint32_t writePos = HEADER_LENGTH + ((file.size() - HEADER_LENGTH) / _entrySize) * _entrySize;
+  if (writePos != file.position()) {
+    Serial.print("[LS.warn] Corrupted write detected. The write position was adjusted.");
+  }
+  file.seek(writePos, SeekSet);
   for (uint8_t i = 0; i < _entriesBuffered; ++i) {
-    file.write((const uint8_t *)_writeBuffer + indexToOffset(i), _entrySize);
+    size_t bytesWritten = file.write((const uint8_t *)_writeBuffer + indexToOffset(i), _entrySize);
+
+    if (bytesWritten != _entrySize) {
+      file.close();
+      Serial.println("[LS.err] Failed to write log entry.");
+      return false;
+    }
+  }
+
+  uint32_t newEntryCount = _entryCount + _entriesBuffered;
+  file.seek(sizeof(_magicNumber) + sizeof(_entrySize), SeekSet);
+  if (file.write((const uint8_t *)&newEntryCount, sizeof(newEntryCount)) != sizeof(newEntryCount)) {
+    file.close();
+    Serial.println("[LS.err] Failed to update log entry count.");
+    _entryCount = newEntryCount;
+    _entriesBuffered = 0;
+    return false;
   }
   file.close();
 
-  _entryCount += _entriesBuffered;
+  _entryCount = newEntryCount;
   _entriesBuffered = 0;
 
   return true;
@@ -163,14 +211,39 @@ bool LogStore::fetch(uint32_t startIndex) {
     return false;
   }
 
-  uint32_t readPos = HEADER_LENGTH + indexToOffset(_readStartIndex);
+  int i = 0;
+  uint32_t readPos = HEADER_LENGTH + readIndexToOffset(_readStartIndex);
   file.seek(readPos, SeekSet);
-  for (uint8_t i = 0; i < _readBufferDepth; i++) {
-    if ((_readStartIndex + i) >= _entryCount) break;  // Don't read beyond the available entries
+  while (i < _readBufferDepth) {
+    if ((file.position() + _entrySize) > file.size()) break;  // Stop if no more data is available
+    if ((_readStartIndex + i) >= _entryCount) break;          // Don't read beyond the available entries
 
-    file.read((uint8_t *)_readBuffer + indexToOffset(i), _entrySize);
+    file.read((uint8_t *)_readBuffer + indexToOffset(i), _dataSize);
+    uint8_t readDelimiter = file.read();  // Read the checksum delimiter
+    uint8_t readChecksum = file.read();   // Read the stored checksum from the file
+
+    uint8_t checksum = 0;
+    for (uint16_t j = 0; j < _dataSize; ++j) {
+      checksum ^= *((uint8_t *)_readBuffer + indexToOffset(i) + j);
+    }
+
+    // Verify the checksum and delimiter before accepting the entry
+    if ((readDelimiter != CHECKSUM_DELIMITER) || (checksum != readChecksum)) {
+      readPos += 1;
+      _readOffsetAdjustment += 1;
+      file.seek(readPos, SeekSet);
+      continue;
+    }
+
+    readPos += _entrySize;  // Move to the next entry position
+    i++;
   }
   file.close();
+
+  if (i == 0) {  // no entries were successfully read
+    _readStartIndex = -1;
+    return false;
+  }
 
   return true;
 }
@@ -182,6 +255,7 @@ void *LogStore::readFirst(bool flushBuffer) {
   if (_entryCount == 0) return nullptr;  // No entries to read
 
   // Load the first set of entries into the read buffer
+  _readOffsetAdjustment = 0;
   if (!fetch(0)) {
     return nullptr;  // Failed to fetch the first set of entries
   }
@@ -298,4 +372,8 @@ void LogStore::dump(bool deaderNump, uint32_t entriesToDump) {
 
 uint32_t LogStore::indexToOffset(uint32_t index) const {
   return index * _entrySize;
+}
+
+uint32_t LogStore::readIndexToOffset(uint32_t index) const {
+  return indexToOffset(index) + _readOffsetAdjustment;
 }
