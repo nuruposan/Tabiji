@@ -116,7 +116,7 @@ bool LogStore::reset() {
 
   uint16_t paddingSize = HEADER_LENGTH - (sizeof(_magicNumber) + sizeof(_entrySize) + sizeof(_entryCount));
   for (uint16_t i = 0; i < paddingSize; ++i) {
-    file.write((const uint8_t)0x00);
+    file.write((const uint8_t)0xFF);  // fill remaining bytes
   }
   file.close();
 
@@ -158,7 +158,7 @@ bool LogStore::flush() {
   }
 
   // Move to the end of the file and write the buffered logs
-  uint32_t writePos = HEADER_LENGTH + ((file.size() - HEADER_LENGTH) / _entrySize) * _entrySize;
+  uint32_t writePos = HEADER_LENGTH + (_entryCount * _entrySize);
   if (writePos != file.position()) {
     Serial.print("[LS.warn] Corrupted write detected. The write position was adjusted.");
   }
