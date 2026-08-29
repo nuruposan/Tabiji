@@ -32,6 +32,6 @@ This project aims to build a DIY GPS logger that integrates a XIAO board and a G
 |       |3V3 -------- 3V3| mod  |
 |       |GND -------- GND|      |
 |       |
-|       |BAT+ ------- +| LiPo    |
-|       |BAT- ------- -| Battery |
+|       |BAT+ ------- +| LiPo |
+|       |BAT- ------- -| BAT  |
 ```

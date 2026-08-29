@@ -22,6 +22,14 @@ static const uint8_t PIN_BUTTON2 = 3;
 static const uint8_t PIN_BUTTON3 = 4;
 static const uint8_t PIN_USER_LED = 21;
 
+// Log storage configuration constants
+static const uint32_t LOG_UPDATE_INTERVAL = 15000;
+
+// Buffer depth configuration for log storage
+static const uint8_t LOG_ENTRY_SIZE = sizeof(GpsRecord);
+static const uint8_t WRITE_BUF_DEPTH = 8;
+static const uint8_t READ_BUF_DEPTH = 16;
+
 // Beep configuration constants
 static const uint16_t BEEP_FREQ_HIGH = 2000;
 static const uint16_t BEEP_FREQ_LOW = 1000;
@@ -235,9 +243,9 @@ void setup() {
     Serial.println("[SYS.err] Failed to initialize GNSS module");
     halt(ERROR_CODE_GNSS_INIT_FAILED);  // Halt the system if the GNSS tracker fails to initialize
   }
-  tracker.setOnStabilized(onGnssStabilized);      // Set the callback for when the  GNSS module is stabilized
-  tracker.setOnLocationUpdate(onLocationUpdate);  // Set the callback for when a new location update is available
-  tracker.setUpdateInterval(15000);               // Set the default update interval to 15 seconds
+  tracker.setOnStabilized(onGnssStabilized);       // Set the callback for when the  GNSS module is stabilized
+  tracker.setOnLocationUpdate(onLocationUpdate);   // Set the callback for when a new location update is available
+  tracker.setUpdateInterval(LOG_UPDATE_INTERVAL);  // Set the default update interval to 15 seconds
 
   // enable builtin LED pin
   pinMode(PIN_USER_LED, OUTPUT);
@@ -247,7 +255,7 @@ void setup() {
   pinMode(PIN_GPS_WUP, OUTPUT);  // HIGH to enable, LOW to disable
   enableGnssModule(true);
 
-  if (!logStore.begin(sizeof(GpsRecord), 8, 8)) {  // Initialize the log storage
+  if (!logStore.begin(LOG_ENTRY_SIZE, WRITE_BUF_DEPTH, READ_BUF_DEPTH)) {  // Initialize the log storage
     Serial.println("[SYS.err] Failed to initialize log storage");
     halt(ERROR_CODE_FLASH_INIT_FAILED);  // Halt the system if the log storage fails to initialize
   }

@@ -28,14 +28,14 @@ class GpsTracker {
   static const uint16_t RX_BUFFER_SIZE = 1024;           // Size of the RX buffer for GNSS data in bytes
   static const uint16_t DATA_MAX_AGE = 2000;             // Maximum age of GNSS data in milliseconds
   static const uint16_t STABILIZATION_TIME = 12000;      // Time in milliseconds to consider GNSS stabilized
-  static const uint8_t STABILIZATION_SAMPLES = 12;       // Number of valid readings to consider GNSS stabilized
+  static const uint8_t STABILIZATION_SAMPLES = 8;        // Number of valid readings to consider GNSS stabilized
   static const uint8_t MIN_SATELLITES = 6;               // Minimum of SATs required for a valid fix (must be >=4)
   static const uint8_t DEFAULT_RX_PIN = 43;              // Default RX pin for GNSS module
   static const uint8_t DEFAULT_TX_PIN = 44;              // Default TX pin for GNSS module
   static const uint8_t DEFAULT_SLEEP_PIN = -1;           // Default sleep pin for GNSS module (not used)
-  static const uint16_t DEFAULT_UPDATE_INTERVAL = 5000;  // Default logging interval in milliseconds
+  static const uint32_t DEFAULT_UPDATE_INTERVAL = 5000;  // Default logging interval in milliseconds
 
-  static const uint16_t UPDATE_MARGIN = 100;            // Margin in milliseconds for update interval
+  static const uint32_t UPDATE_MARGIN = 100;            // Margin in milliseconds for update interval
   static const GpsBaudRate GPS_BAUD_RATE = BAUD_19200;  // Default baud rate for GNSS module
 
  private:
@@ -48,7 +48,7 @@ class GpsTracker {
   uint8_t _txPin = DEFAULT_TX_PIN;                     // Pin used for GNSS TX (transmit)
   uint8_t _rxPin = DEFAULT_RX_PIN;                     // Pin used for GNSS RX (receive)
   uint8_t _sleepPin = DEFAULT_SLEEP_PIN;               // Pin used to control sleep mode
-  uint16_t _updateInterval = DEFAULT_UPDATE_INTERVAL;  // Logging interval in milliseconds
+  uint32_t _updateInterval = DEFAULT_UPDATE_INTERVAL;  // Logging interval in milliseconds
   //  uint32_t _lastLoggingTime = 0;            // Timestamp of the last log entry
   uint32_t _stabilizeStartTime = 0;         // Timestamp when stabilization checks started
   uint8_t _stabilizeCount = 0;              // Counter for stabilization checks
@@ -81,8 +81,8 @@ class GpsTracker {
   void setOnStabilized(void (*callback)());
   void setOnLocationUpdate(void (*callback)());
   GpsRecord getLastLocation() const;
-  uint16_t getUpdateInterval() const;
-  void setUpdateInterval(uint16_t interval);
+  uint32_t getUpdateInterval() const;
+  void setUpdateInterval(uint32_t interval);
   void setDebugOutput(bool enable);
   uint32_t getBaudRate() const;
   uint16_t getMaxDataAge() const;

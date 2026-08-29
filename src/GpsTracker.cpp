@@ -119,7 +119,8 @@ void GpsTracker::updateLocationData() {
 
   // Update the last known location data
   uint32_t timeDelta = now - _lastUpdateTime;
-  if (timeDelta >= max(0, _updateInterval - UPDATE_MARGIN)) {  // Allow a small margin for timing inaccuracies
+  bool shouldUpdate = (timeDelta >= (_updateInterval - UPDATE_MARGIN));
+  if (shouldUpdate) {
     _lastLocation = newrec;
     _lastUpdateTime = now;
 
@@ -150,12 +151,12 @@ GpsRecord GpsTracker::getLastLocation() const {
   return _lastLocation;
 }
 
-uint16_t GpsTracker::getUpdateInterval() const {
+uint32_t GpsTracker::getUpdateInterval() const {
   // Return the current update interval for location data in milliseconds
   return _updateInterval;
 }
 
-void GpsTracker::setUpdateInterval(uint16_t interval) {
+void GpsTracker::setUpdateInterval(uint32_t interval) {
   // Set the update interval for location data in milliseconds
   _updateInterval = interval;
 }
