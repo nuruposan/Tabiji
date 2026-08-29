@@ -21,10 +21,10 @@ This project aims to build a DIY GPS logger that integrates a XIAO board and a G
 ## Wiring on Breadboard
 
 ```text
-|       |D0 --------- [ BUZZ ] -----+----- GND
-|       |D1 --------- [ BTN1 ] -----+
-|       |D2 --------- [ BTN2 ] -----+
-|       |D3 --------- [ BTN3 ] -----+
+|       |D0 ------------ [ BUZZ ] ----+---- GND
+|       |D1 ------------ [ BTN1 ] ----+
+|       |D2 ------------ [ BTN2 ] ----+
+|       |D3 ------------ [ BTN3 ] ----+
 | XIAO  |
 | ESP32 |D5 --------- WUP|      |
 | S3    |D6(TX) ------ RX| L76K |
@@ -32,6 +32,6 @@ This project aims to build a DIY GPS logger that integrates a XIAO board and a G
 |       |3V3 -------- 3V3| mod  |
 |       |GND -------- GND|      |
 |       |
-|       |BAT+ ------- +| LiPo |
-|       |BAT- ------- -| BAT  |
+|       |BAT+ --------- +| LiPo |
+|       |BAT- --------- -| BAT  |
 ```
