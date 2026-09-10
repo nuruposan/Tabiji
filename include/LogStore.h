@@ -5,21 +5,21 @@
 
 class LogStore {
  public:
-  static const int32_t HEADER_LENGTH = 128;                 // Size of the header in bytes
-  static const uint32_t MAGIC_NUMBER_DEFAULT = 0x12345678;  // Default magic number for validating log file integrity
-  static const int8_t BUFFER_DEPTH_DEFAULT = 8;             // Default cache depth (entries) for read/write buffers
-  static const int32_t DUMP_ENTRY_LIMIT_DEFAULT = 4;        // Limit the number of entries to dump from log file
-  static const int8_t CHECKSUM_FIELD_LENGTH = 2;            // Length of the checksum field in bytes
-  static const char CHECKSUM_DELIMITER = '*';               // Delimiter character for separating checksum field
+  static constexpr int32_t HEADER_LENGTH = 128;              // Size of the header in bytes
+  static constexpr uint32_t MAGIC_NUM_DEFAULT = 0x12345678;  // Default magic number for validating log file integrity
+  static constexpr int8_t BUFFER_DEPTH_DEFAULT = 8;          // Default cache depth (entries) for read/write buffers
+  static constexpr int32_t DUMP_ENTRY_LIMIT_DEFAULT = 4;     // Limit the number of entries to dump from log file
+  static constexpr int8_t CHECKSUM_FIELD_LENGTH = 2;         // Length of the checksum field in bytes
+  static constexpr char CHECKSUM_DELIMITER = '*';            // Delimiter character for separating checksum field
 
   const char *DS_FILENAME = "/data.bin";  // File name for storing log entries
 
  private:
   // Log file metadata
-  uint32_t _magicNumber = MAGIC_NUMBER_DEFAULT;  // Magic number for validating log file integrity
-  uint32_t _dataSize = 0;                        // Size of the actual data in each log entry (excluding checksum)
-  uint32_t _entrySize = 0;                       // Size of each log entry in bytes on storage (including checksum)
-  uint32_t _entryCount = 0;                      // Current number of log entries
+  uint32_t _magicNumber = MAGIC_NUM_DEFAULT;  // Magic number for validating log file integrity
+  uint32_t _dataSize = 0;                     // Size of the actual data in each log entry (excluding checksum)
+  uint32_t _entrySize = 0;                    // Size of each log entry in bytes on storage (including checksum)
+  uint32_t _entryCount = 0;                   // Current number of log entries
 
   // Write buffer and related variables
   void *_writeBuffer = nullptr;                     // Buffer for writing log entries
@@ -47,7 +47,7 @@ class LogStore {
   bool fetch(uint32_t startIndex);
 
  public:
-  LogStore(uint32_t magicNumber = MAGIC_NUMBER_DEFAULT);
+  LogStore(uint32_t magicNumber = MAGIC_NUM_DEFAULT);
   ~LogStore();
 
   bool begin(int8_t entrySize,                        //

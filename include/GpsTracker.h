@@ -25,18 +25,18 @@ typedef enum {
 class GpsTracker {
  public:
   // Default parameters
-  static const uint16_t RX_BUFFER_SIZE = 1024;           // Size of the RX buffer for GNSS data in bytes
-  static const uint16_t DATA_MAX_AGE = 2000;             // Maximum age of GNSS data in milliseconds
-  static const uint16_t STABILIZATION_TIME = 12000;      // Time in milliseconds to consider GNSS stabilized
-  static const uint8_t STABILIZATION_SAMPLES = 8;        // Number of valid readings to consider GNSS stabilized
-  static const uint8_t MIN_SATELLITES = 6;               // Minimum of SATs required for a valid fix (must be >=4)
-  static const uint8_t DEFAULT_RX_PIN = 43;              // Default RX pin for GNSS module
-  static const uint8_t DEFAULT_TX_PIN = 44;              // Default TX pin for GNSS module
-  static const uint8_t DEFAULT_SLEEP_PIN = -1;           // Default sleep pin for GNSS module (not used)
-  static const uint32_t DEFAULT_UPDATE_INTERVAL = 5000;  // Default logging interval in milliseconds
+  static constexpr uint16_t RX_BUFFER_SIZE = 1024;           // Size of the RX buffer for GNSS data in bytes
+  static constexpr uint16_t DATA_MAX_AGE = 2000;             // Maximum age of GNSS data in milliseconds
+  static constexpr uint16_t STABILIZATION_TIME = 12000;      // Time in milliseconds to consider GNSS stabilized
+  static constexpr uint8_t STABILIZATION_SAMPLES = 8;        // Number of valid readings to consider GNSS stabilized
+  static constexpr uint8_t MIN_SATELLITES = 6;               // Minimum of SATs required for a valid fix (must be >=4)
+  static constexpr uint8_t DEFAULT_RX_PIN = 43;              // Default RX pin for GNSS module
+  static constexpr uint8_t DEFAULT_TX_PIN = 44;              // Default TX pin for GNSS module
+  static constexpr uint8_t DEFAULT_SLEEP_PIN = -1;           // Default sleep pin for GNSS module (not used)
+  static constexpr uint32_t DEFAULT_UPDATE_INTERVAL = 5000;  // Default logging interval in milliseconds
 
-  static const uint32_t UPDATE_MARGIN = 100;            // Margin in milliseconds for update interval
-  static const GpsBaudRate GPS_BAUD_RATE = BAUD_19200;  // Default baud rate for GNSS module
+  static constexpr uint32_t UPDATE_MARGIN = 100;            // Margin in milliseconds for update interval
+  static constexpr GpsBaudRate GPS_BAUD_RATE = BAUD_19200;  // Default baud rate for GNSS module
 
  private:
   HardwareSerial _serial;                              // Reference to the serial port used for GNSS communication
@@ -76,17 +76,18 @@ class GpsTracker {
   GpsTracker(uint8_t rxPin = 43, uint8_t txPin = 44, uint8_t sleepPin = -1);
   ~GpsTracker();
   bool begin();
-  void process();
-  bool isStabilized();
-  void setOnStabilized(void (*callback)());
-  void setOnLocationUpdate(void (*callback)());
-  GpsRecord getLastLocation() const;
-  uint32_t getUpdateInterval() const;
-  void setUpdateInterval(uint32_t interval);
-  void setDebugOutput(bool enable);
   uint32_t getBaudRate() const;
+  GpsRecord getLastLocation() const;
   uint16_t getMaxDataAge() const;
-  void setMaxDataAge(uint16_t maxAge);
   uint8_t getMinSatellites() const;
+  uint32_t getUpdateInterval() const;
+  bool isStabilized();
+  void process();
+  void setDebugOutput(bool enable);
+  void setMaxDataAge(uint16_t maxAge);
   void setMinSatellites(uint8_t minSat);
+  void setOnLocationUpdate(void (*callback)());
+  void setOnStabilized(void (*callback)());
+  void setIntermittendSleep(bool enable);
+  void setUpdateInterval(uint32_t interval);
 };

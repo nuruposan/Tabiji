@@ -197,7 +197,8 @@ bool LogStore::flush() {
   file.seek(writePos, SeekSet);
   for (uint8_t i = 0; i < _entriesBuffered; ++i) {
     // Write the buffered entry to the file
-    bytesWritten = file.write((const uint8_t *)(_writeBuffer + indexToOffset(i)), _entrySize);
+    
+    bytesWritten = file.write((const uint8_t *)_writeBuffer + indexToOffset(i), _entrySize);
 
     // Check if the write was successful
     if (bytesWritten != _entrySize) {  // Failed to write the entire entry

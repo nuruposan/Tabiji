@@ -38,9 +38,9 @@ void GpsTracker::updateStabilizationStatus() {
   if (!_gps.satellites.isUpdated()) return;  // No new data
 
   // Update the stabilized flag based on the GNSS data
-  bool gnssFixed = (_gps.satellites.isValid()                  //
-                    && (_gps.satellites.age() <= _maxDataAge)  //
-                    && (_gps.satellites.value() >= _minSatellites));
+  bool gnssFixed = (_gps.satellites.isValid()                       // Satellites data is valid
+                    && (_gps.satellites.value() >= _minSatellites)  // Has enough satellites
+                    && (_gps.satellites.age() <= _maxDataAge));     // Data is recent enough
 
   // If not fixed, reset the stabilization timer and count
   if (!gnssFixed) {

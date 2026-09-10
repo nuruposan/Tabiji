@@ -85,6 +85,8 @@ void beep(uint16_t frequency, uint16_t repeat, uint16_t duration, uint16_t inter
 void onButton1Pressed() {  // left button
   beep(BEEP_FREQ_HIGH);
 
+  logStore.reset();
+
   Serial.print("<gpx>\n");
   Serial.print("<trk>\n");
   Serial.print("<trkseg>\n");
@@ -143,7 +145,7 @@ void onButton3Pressed() {  // right (red) button
 }
 
 void onGnssStabilized() {
-  Serial.println("onGnssStabilized: GNSS module stabilized. Ready to log location data.");
+  // Serial.println("onGnssStabilized: GNSS module stabilized. Ready to log location data.");
   beep(BEEP_FREQ_HIGH, 2);
   delay(500);
 }
