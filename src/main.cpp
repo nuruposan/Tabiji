@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "BleSerialServer.h"
+#include "BleSerialConnection.h"
 #include "ButtonManager.h"
 #include "GpsTracker.h"
 #include "LogStore.h"
@@ -59,7 +59,7 @@ void halt(uint8_t errorCode = 1);
 GpsTracker tracker(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_WUP);  // Initialize the GNSS tracker
 ButtonManager buttons(3);                                 // Manage up to 3 buttons
 LogStore logStore(APP_VERSION);                           // Initialize the log storage with a magic number
-// BleSerialServer bleServer("Test App");                    // Initialize the BLE serial server
+// BleSerialConnection bleConnection(BleSerialConnection::Mode::Server, "Test App");
 bool gnssEnabled = false;    // Track the GNSS module's enable state
 bool gnssDebugging = false;  // Track the GNSS debugging state
 
