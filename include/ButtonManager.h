@@ -28,11 +28,13 @@ class ButtonManager {
   size_t _maxButtons;
 
  public:
-    static constexpr size_t DEFAULT_MAX_BUTTONS = 3;
-    static constexpr int8_t BID_NULL = -1;
+  static constexpr size_t DEFAULT_MAX_BUTTONS = 3;
+  static constexpr int8_t BID_NULL = -1;
 
   ButtonManager(size_t maxButtons = DEFAULT_MAX_BUTTONS);
   ~ButtonManager();
+  ButtonManager(const ButtonManager &) = delete;
+  ButtonManager &operator=(const ButtonManager &) = delete;
   int8_t add(PushButton *button);
   void begin();
   void clear();

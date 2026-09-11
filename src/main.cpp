@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "BleSerialServer.h"
 #include "ButtonManager.h"
 #include "GpsTracker.h"
 #include "LogStore.h"
@@ -55,11 +56,12 @@ char *toISO8601DateTime(uint32_t unixtime, char *buffer, size_t bufferSize);
 uint32_t toUnixtime(TinyGPSDate &date, TinyGPSTime &time);
 void halt(uint8_t errorCode = 1);
 
-GpsTracker tracker = GpsTracker(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_WUP);  // Initialize the GNSS tracker
-ButtonManager buttons = ButtonManager(3);                              // Manage up to 3 buttons
-LogStore logStore = LogStore(APP_VERSION);                             // Initialize the log storage with a magic number
-bool gnssEnabled = false;                                              // Track the GNSS module's enable state
-bool gnssDebugging = false;                                            // Track the GNSS debugging state
+GpsTracker tracker(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_WUP);  // Initialize the GNSS tracker
+ButtonManager buttons(3);                                 // Manage up to 3 buttons
+LogStore logStore(APP_VERSION);                           // Initialize the log storage with a magic number
+// BleSerialServer bleServer("Test App");                    // Initialize the BLE serial server
+bool gnssEnabled = false;    // Track the GNSS module's enable state
+bool gnssDebugging = false;  // Track the GNSS debugging state
 
 void blinkLed(uint8_t repeat, uint16_t duration, uint16_t interval) {
   for (uint8_t i = 0; i < repeat; i++) {
@@ -267,6 +269,9 @@ void setup() {
   buttons.add(new PushButton(PIN_BUTTON1, onButton1Pressed));
   buttons.add(new PushButton(PIN_BUTTON2, onButton2Pressed));
   buttons.add(new PushButton(PIN_BUTTON3, onButton3Pressed));
+
+  // set up the BLE serial server
+  //  bleServer.begin();  // Start the BLE serial server
 
   // beep to indicate that the system has started successfully
   beep(BEEP_FREQ_LOW, 1, 500);

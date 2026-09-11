@@ -75,6 +75,8 @@ class GpsTracker {
  public:
   GpsTracker(uint8_t rxPin = 43, uint8_t txPin = 44, uint8_t sleepPin = -1);
   ~GpsTracker();
+    GpsTracker(const GpsTracker &) = delete;
+    GpsTracker &operator=(const GpsTracker &) = delete;
   bool begin();
   uint32_t getBaudRate() const;
   GpsRecord getLastLocation() const;

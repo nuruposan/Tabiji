@@ -49,6 +49,8 @@ class LogStore {
  public:
   LogStore(uint32_t magicNumber = MAGIC_NUM_DEFAULT);
   ~LogStore();
+  LogStore(const LogStore &) = delete;
+  LogStore &operator=(const LogStore &) = delete;
 
   bool begin(int8_t entrySize,                        //
       int8_t writeCacheDepth = BUFFER_DEPTH_DEFAULT,  //
