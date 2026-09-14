@@ -80,7 +80,7 @@ class BleSerialConnection : public NimBLEServerCallbacks,
 
   void onConnect(NimBLEServer *server, NimBLEConnInfo &info) override;
   void onDisconnect(NimBLEServer *server, NimBLEConnInfo &info, int reason) override;
-  void onWrite(NimBLECharacteristic *characteristic, NimBLEConnInfo &info) override;
+  void onReceive(NimBLECharacteristic *characteristic, NimBLEConnInfo &info) override;
 
   void onConnect(NimBLEClient *client) override;
   void onConnectFail(NimBLEClient *client, int reason) override;

@@ -255,7 +255,7 @@ void BleSerialConnection::onDisconnect(NimBLEServer *server, NimBLEConnInfo &inf
   }
 }
 
-void BleSerialConnection::onWrite(NimBLECharacteristic *characteristic, NimBLEConnInfo &info) {
+void BleSerialConnection::onReceive(NimBLECharacteristic *characteristic, NimBLEConnInfo &info) {
   if (_mode != ConnectionMode::MODE_SERVER) {
     return;
   }
