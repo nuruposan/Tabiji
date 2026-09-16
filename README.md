@@ -1,4 +1,4 @@
-# 🗺️Tabiji - a GPS logger 
+# 🗺️Tabiji
 ESP32-S3 firmware for a portable GPS/GNSS logger, supporting GPX file generation over Bluetooth/USB.
 
 ## 📍Project Overview
@@ -73,8 +73,6 @@ The AtomS3-Lite and the TFCard module are stacked together to form the Log Downl
 |        |               |        |              |
 |        |G38 -----------|------------------- [ SPK2 ]
 ```
-
-
 
 ## 🚀Getting Started
 
