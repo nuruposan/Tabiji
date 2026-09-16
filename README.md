@@ -1,43 +1,38 @@
-# 🗺 Tabiji
+# 🗺️Tabiji - a GPS logger 
 ESP32-S3 firmware for a portable GPS/GNSS logger, supporting GPX file generation over Bluetooth/USB.
 
 ## 📍Project Overview
 
-This project aims to build a DIY GPS logger that integrates a XIAO board and a GNSS module into a 3D-printed enclosure.
+This project aims to build a DIY GPS logger system consisting of two units: a logger unit that records GPS/GNSS data and a log downloader unit that downloads the logs and saves them to an SD card.
+
+The logger unit integrates a XIAO board and a GNSS module into a 3D-printed enclosure. The log downloader unit uses an AtomS3-Lite and an SD/TF card module to transfer the recorded logs and save it in GPX format to an SD card.
 
 
-
-### 🚦Current Status
+### 🚦Status of this project
 
 - Currently undergoing functional testing on a breadboard.
 - Developing firmware to output GPX files externally via Bluetooth or Serial communication.
 
-## 🛠 Development Environment
+## 🛠️ Development Environment & Libraries
 
 This project is built using:
 * **IDE**:
   * [VS Code](https://visualstudio.com) with [PlatformIO IDE](https://platformio.org) extension
 * **Libraries used**:
-  * [TinyGPSPlus](https://github.com) (for parsing NMEA data from the GNSS module)
-  * [NimBLE-Arduino](https://github.com) (for efficient Bluetooth Low Energy communication)
+  * [TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus) (for parsing NMEA data from the GNSS module)
+  * [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino) (for efficient Bluetooth Low Energy communication)
 
-## 📦 Components Needed
+## 📦GPS Logger Unit
 
-* **GPS Logger Unit**
-  * **Microcontroller Board**: [Seeed Studio XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/)
-  * **GNSS Module**: [L76K GNSS Module for SeeedStudio XIAO](https://wiki.seeedstudio.com/get_start_l76k_gnss/)
-  * **Power source**: 1x LiPo Battery
-  * **Control input**: 3x push button switches (BTN1-3)
-  * **Sound feedback**: 1x piezo buzzer (SPK1)
+### Components
 
-* **Log Downloader Unit**
-  * **Microcontroller board**: [AtomS3-Lite](https://docs.m5stack.com/en/core/AtomS3%20Lite)
-  * **SD/TF card module**: [Atomic TFCard Base](https://docs.m5stack.com/en/atom/Atomic%20TF-Card%20Reader)
-  * **Sound feedback**: 1x piezo buzzer (SPK2)
+* **Microcontroller Board**: [Seeed Studio XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/)
+* **GNSS Module**: [L76K GNSS Module for SeeedStudio XIAO](https://wiki.seeedstudio.com/get_start_l76k_gnss/)
+* **Power source**: 1x LiPo Battery
+* **Control input**: 3x push button switches (BTN1-3)
+* **Sound feedback**: 1x piezo buzzer (SPK1)
 
-## 🔌Wiring
-
-### GPS Logger Unit (on breadboard)
+### Wiring (currently on breadboard)
 
 ```text
 |       |D0 ------------ [ SPK1 ] ----+---- GND
@@ -55,7 +50,17 @@ This project is built using:
 |       |BAT- --------- -| BAT  |
 ```
 
-### Log Downloader Unit
+## 📥Log Downloader Unit
+
+The AtomS3-Lite and the TFCard module are stacked together to form the Log Downloader Unit. A piezo buzzer is additionally connected to an unused pin on the TFCard module for sound feedback.
+
+### Components
+
+* **Microcontroller board**: [AtomS3-Lite](https://docs.m5stack.com/en/core/AtomS3%20Lite)
+* **SD/TF card module**: [Atomic TFCard Base](https://docs.m5stack.com/en/atom/Atomic%20TF-Card%20Reader)
+* **Sound feedback**: 1x piezo buzzer (SPK2)
+
+### Wiring
 
 ```text
 |        |3V3 ------  3V3|        |
@@ -68,6 +73,8 @@ This project is built using:
 |        |               |        |              |
 |        |G38 -----------|------------------- [ SPK2 ]
 ```
+
+
 
 ## 🚀Getting Started
 
