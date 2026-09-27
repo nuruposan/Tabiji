@@ -69,22 +69,31 @@ The AtomS3-Lite and the TFCard module are stacked together to form the Log Downl
 | ATOMS3 |G8 ------- MISO| TFCARD |
 | Lite   |               | Base   |
 | board  |5V  -------- 5V| module |
-|        |GND ------- GND|        |GND ----------+
+|        |GND ------- GND|-----------------------+
 |        |               |        |              |
-|        |G38 -----------|------------------- [ SPK2 ]
+|        |G38 -------- 25|------------------- [ SPK2 ]
 ```
+
+*SPK2 is connected to pin 25 and GND on the TFCARD base module.*
 
 ## 🚀Getting Started
 
 ### 1. Setup Project
 
-Clone this repository to your preferred local directory and open it with VS Code:
+Clone this repository to your preferred local directory and open ```logger``` or ```download``` in the directory with VS Code:
 ```bash
-git clone https://github.com
+git clone https://github.com/nuruposan/Tabiji
 ```
 *PlatformIO will automatically detect the configuration and download the required libraries upon opening.*
 
 ### 2. Flashing the Firmware
 
-1. Connect your wired **XIAO ESP32-S3** board to your PC via a USB-C cable.
-2. Click the **PlatformIO: Upload** button (the arrow icon in the bottom status bar) or run ```pio run --target upload``` in the VS Code terminal.
+* GPS Logger Unit
+  1. Open ```<your-local-directory>/logger``` with VS code.
+  2. Connect your wired **XIAO ESP32-S3** board to your PC via a USB-C cable.
+  3. Click the **PlatformIO: Upload** button (the arrow icon in the bottom status bar) or run ```pio run --target upload``` in the VS Code terminal.
+
+* Log Downloader Unit
+  1. Open ```<your-local-directory>/downloader``` with VS code.
+  2. Connect your **AtomS3 Lite** to your PC via a USB-C cable.
+  3. Click the **PlatformIO: Upload** button (the arrow icon in the bottom status bar) or run ```pio run --target upload``` in the VS Code terminal.
