@@ -28,6 +28,9 @@ static const uint16_t BEEP_FREQ_LOW = 1000;
 static const uint16_t BEEP_DURATION = 75;
 static const uint16_t BEEP_INTERVAL = 100;
 
+static const uint16_t BUTTON_SHORT_THRESHOLD = 1000;  // Short press threshold in milliseconds
+static const uint16_t BUTTON_LONG_THRESHOLD = 5000;   // Long press threshold in milliseconds
+
 BleSerialConnection *bleClient;
 StatusIndicator indicator;
 hw_timer_t *timer = nullptr;
@@ -91,39 +94,43 @@ void loop() {
     indicator.update();
   }
 
-  if (AtomS3.BtnA.wasPressed()) {
-    indicator.setStatus(StatusIndicator::Mode::SOLID, COLOR_GREEN);
-    indicator.update();
-
+  if (AtomS3.BtnA.wasPressed()) {  // Button A was just pressed
+    // start tracking the press duration
     buttonPressStart = millis();
+    indicator.notify(StatusIndicator::Mode::SOLID, COLOR_GREEN, BUTTON_SHORT_THRESHOLD);  // Notify for short press
 
-  } else if (AtomS3.BtnA.isHolding()) {
+  } else if (AtomS3.BtnA.isHolding()) {  // Button A is being held down
     uint32_t buttonPressDuration = millis() - buttonPressStart;
-    if ((!longPressProcessed) && (buttonPressDuration >= 6000)) {
+
+    if ((!longPressProcessed) && (buttonPressDuration >= BUTTON_LONG_THRESHOLD)) {  // Long press detected
+      // Handle long press action here
+      longPressProcessed = true;
       indicator.notify(StatusIndicator::Mode::BLINK, COLOR_WHITE, 80, 2);
       indicator.beep(BEEP_FREQ_HIGH, 1, 1000);
 
-      longPressProcessed = true;
-
-    } else if ((!longPressNotified) && (buttonPressDuration >= 1000)) {
-      indicator.beep(BEEP_FREQ_LOW, 16, 500, 300);
-      indicator.notify(StatusIndicator::Mode::SOLID, COLOR_YELLOW, 6000);
-
+    } else if ((!longPressNotified) && (buttonPressDuration >= BUTTON_SHORT_THRESHOLD)) {  // Pre-long press detected
+      // warning for upcoming long press
       longPressNotified = true;
+      indicator.beep(BEEP_FREQ_LOW, 16, 500, 300);
+      indicator.notify(StatusIndicator::Mode::SOLID, COLOR_YELLOW, BUTTON_LONG_THRESHOLD);
     }
 
-  } else if (AtomS3.BtnA.wasReleased()) {
+  } else if (AtomS3.BtnA.wasReleased()) {  // Button A was just released
     uint32_t buttonPressDuration = millis() - buttonPressStart;
 
-    if (buttonPressDuration < 1000) {
+    if (buttonPressDuration < BUTTON_SHORT_THRESHOLD) {  // Short click detected
       indicator.notify(StatusIndicator::Mode::BLINK, COLOR_WHITE, 80, 2);
       indicator.beep(BEEP_FREQ_HIGH);
 
-    } else if (!longPressProcessed) {
-      indicator.notify(StatusIndicator::Mode::BLINK, COLOR_RED, 80, 2);
+      // Handle short click action here
+
+    } else if (!longPressProcessed) {  // Released before long press threshold
+      // cancel Yellow notification
+      indicator.notify(StatusIndicator::Mode::BLINK, COLOR_NONE, 10);
       indicator.beep(500, 3, 75, 50);
     }
 
+    // Reset notification and press tracking flags
     buttonPressStart = 0;
     longPressProcessed = false;
     longPressNotified = false;
@@ -168,5 +175,7 @@ void onBleReceive(NimBLEConnInfo &info, const char *data, size_t len) {
 
 void IRAM_ATTR onTimer() {
   // This function is called periodically by a timer.
+
+  // Request an indicator update
   indicatorUpdateRequested = true;
 }
